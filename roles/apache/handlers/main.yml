@@ -1,0 +1,31 @@
+- name: apache service started
+  become: true
+  service:
+    name: "{{ apache_package }}"
+    state: started
+
+- name: apache service enabled
+  become: true
+  service:
+    name: "{{ apache_package }}"
+    enabled: true
+
+- name: apache enable mod rewrite
+  become: true
+  command:
+    argv:
+      - a2enmod
+      - rewrite
+
+- name: apache enable site
+  become: true
+  command:
+    argv:
+      - a2ensite
+      - "{{ app_config_name }}"
+
+- name: apache service restart
+  become: true
+  service:
+    name: "{{ apache_package }}"
+    state: restarted

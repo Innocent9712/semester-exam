@@ -1,0 +1,78 @@
+- name: download mysql source
+  tags:
+    - mysql
+    - debian
+  get_url:
+    url: https://dev.mysql.com/get/mysql-apt-config_0.8.22-1_all.deb
+    dest: /tmp/
+
+- name: Install package
+  tags:
+    - mysql
+    - debian
+  apt:
+    deb: /tmp/mysql-apt-config_0.8.22-1_all.deb
+    state: present
+    update_cache: yes
+  notify:
+    - update repo
+  when: ansible_distribution == "Debian"
+
+- name: Install MySQL
+  tags:
+    - mysql
+    - debian
+  apt:
+    name: mysql-server
+    state: present
+  notify:
+    - mysql service enabled
+    - mysql service started
+  when: ansible_distribution == "Debian"
+
+- name: Remove python2 - prereqisites for mysql_secure installation
+  tags:
+    - mysql
+    - debian
+  package:
+    name: python2
+    state: absent
+  ignore_errors: yes
+
+# - name: Install python3 - prereqisites for mysql_secure installation
+#   tags:
+#     - mysql
+#     - debian
+#   package:
+#     name: python3
+#     state: present
+
+# - name: Install python-pymysql on Debian (11) - prereqisites for mysql_secure installation
+#   tags:
+#     - mysql
+#     - debian
+#   package:
+#     name:
+#       - python3-pymysql
+#   when: (ansible_distribution == 'Debian' and ansible_distribution_major_version | int == 11)
+
+# - name: mysql_secure_installation
+#   tags:
+#     - mysql
+#     - debian
+#     - secure_installation
+#   mysql_secure_installation:
+#     login_password: ''
+#     new_password: "{{ root_passwd }}"
+#     user: root
+#     login_host: localhost
+#     hosts: ['localhost', '127.0.0.1', '::1']
+#     change_root_password: true
+#     remove_anonymous_user: true
+#     disallow_root_login_remotely: true
+#     remove_test_db: true
+#   register: mysql_secure
+
+# To see detailed output
+- debug:
+    var: mysql_secure

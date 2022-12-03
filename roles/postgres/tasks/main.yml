@@ -1,0 +1,10 @@
+- name: run script setup
+  tags:
+    - postgres
+    - run_postgres
+  script: postgres_setup.sh {{ pg_db_name }} {{ pg_username }} {{ pg_user_pass }}
+
+- name: check that postgres is installed
+  tags:
+    - postgres
+  command: sudo -u postgres psql -c "SELECT version();"

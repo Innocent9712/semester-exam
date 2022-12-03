@@ -1,0 +1,15 @@
+mysql_root_password: "dbpass"
+mysql_databases:
+  - name: laravel
+mysql_users:
+  - name: testuser
+    host: "%"
+    password: testpass
+    priv: "laravel.*:ALL"
+mysql_packages:
+  - mysql-server
+mysql_daemon: mysql
+# mysql_slow_query_log_file: /var/log/mysql/mysql-slow.log
+# mysql_log_error: /var/log/mysql/error.log
+
+remote_user_var: admin

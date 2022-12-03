@@ -1,0 +1,58 @@
+- name: Install some needed softwares
+  become: true
+  tags:
+    - php
+    - debian
+    - php_dep
+  apt:
+    name:
+      - ca-certificates
+      - apt-transport-https
+      - software-properties-common
+      - lsb-release
+    update_cache: true
+
+- name: add sury repository
+  become: true
+  tags:
+    - php
+    - debian
+    - php_repository
+  copy:
+    dest: "/etc/apt/sources.list.d/sury-php.list"
+    content: "deb https://packages.sury.org/php/ {{ ansible_lsb.codename }} main\n"
+
+
+- name: download GPG key for PHP
+  become: true
+  tags:
+    - php
+    - debian
+    - gpg_key
+  get_url:
+    url : https://packages.sury.org/php/apt.gpg
+    dest: /etc/apt/trusted.gpg.d/php.gpg
+  notify:
+    - update repo
+
+
+- name: Install php and necessary related softwares
+  become: true
+  tags:
+    - php
+    - debian
+    - php_softwares
+  apt:
+    name:
+      - php8.1
+      - libapache2-mod-php
+      - php8.1-dev
+      - php8.1-zip
+      - php8.1-curl
+      - php8.1-mbstring
+      - php8.1-mysql
+      - php8.1-gd
+      - php8.1-xml
+    state: present
+    update_cache: true
+  notify: update repo

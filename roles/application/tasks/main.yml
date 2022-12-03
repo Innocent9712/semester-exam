@@ -1,0 +1,134 @@
+# - name: clone repository
+#   become: true
+#   tags:
+#     - app
+#   command:
+#     argv:
+#       - git
+#       - clone
+#       - "{{ app_repo }}"
+#     chdir: "{{ apache_app_directory }}"
+#     # creates: "{{ apache_app_directory }}/laravel-realworld-example-app"
+#     creates: "{{ apache_app_directory }}/{{ app_name }}"
+#   register: my_app
+
+- name: checks if app directory exist
+  tags:
+    - app
+  stat:
+    path: "{{ apache_app_directory }}/{{ app_name }}"
+  register: app_exists
+
+
+- name: clone repository
+  become: true
+  tags:
+    - app
+  git:
+    repo: "{{ app_repo }}"
+    dest: "{{ apache_app_directory }}/{{ app_name }}"
+  register: my_app
+  when: not app_exists.stat.exists
+
+# - name: rename application
+#   become: true
+#   tags:
+#     - app
+#   command:
+#     argv:
+#       - mv
+#       - "{{ apache_app_directory }}/laravel-realworld-example-app"
+#       - "{{ apache_app_directory }}/{{ app_name }}"
+#     creates: "{{ apache_app_directory }}/{{ app_name }}"
+#   when: my_app.changed
+
+- name: copy env file template
+  become: true
+  tags:
+    - app
+    - app_perm
+  template:
+    src: "{{ env_template_file }}"
+    dest: "{{ apache_app_directory }}/{{ app_name }}/.env"
+  when: my_app.changed
+
+- name: set app directory owner and permission
+  become: true
+  tags:
+    - app
+    - app_perm
+  file:
+    dest: "{{ apache_app_directory }}/{{ app_name }}"
+    owner: admin
+    group: www-data
+    mode: 0775
+    recurse: yes
+  when: my_app.changed
+
+- name: install app dependencies
+  tags:
+    - app
+    - app_dep
+  command:
+    chdir: "{{ apache_app_directory }}/{{ app_name }}"
+    argv:
+      - composer
+      - install
+  when: my_app.changed
+
+
+- name: generate app key
+  tags:
+    - app
+    - app_key_gen
+  command:
+    chdir: "{{ apache_app_directory }}/{{ app_name }}"
+    argv:
+      - php
+      - artisan
+      - key:generate
+  when: my_app.changed
+
+- name: migrate database
+  tags:
+    - app
+    - db_migrate
+  command:
+    chdir: "{{ apache_app_directory }}/{{ app_name }}"
+    argv:
+      - php
+      - artisan
+      - migrate
+      - --seed
+  when: my_app.changed
+
+- name: configure apache for app
+  become: true
+  tags:
+    - app
+    - app_config
+  template:
+    src: "{{ app_apache_config }}"
+    dest: "{{ app_apache_config_path }}"
+  notify:
+    - apache enable mod rewrite
+    - apache enable site
+    - apache service restart
+  when: my_app.changed
+
+- name: flush apache handlers
+  tags:
+    - apache
+  meta: flush_handlers
+
+# - name: seed database
+#   tags:
+#     - app
+#     - db_seed
+#   command:
+#     chdir: "{{ apache_app_directory }}/{{ app_name }}"
+#     argv:
+#       - php
+#       - artisan
+#       - db:seed
+

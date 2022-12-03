@@ -1,0 +1,9 @@
+- name: mysql service started
+  service:
+    name: "{{ mysql_package }}"
+    state: started
+
+- name: mysql service enabled
+  service:
+    name: "{{ mysql_package }}"
+    enabled: true

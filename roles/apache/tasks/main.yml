@@ -1,0 +1,30 @@
+- name: Install apache
+  become: true
+  tags:
+    - apache
+    - debian
+  package:
+    name: "{{ apache_package }}"
+    state: latest
+    update_cache: true
+  notify:
+    - apache service started
+    - apache service enabled
+
+# - name: configure apache for app
+#   become: true
+#   tags:
+#     - app_config
+#   template:
+#     src: "{{ app_apache_config }}"
+#     dest: "{{ app_apache_config_path }}"
+#   notify:
+#     - apache enable mod rewrite
+#     - apache enable site
+#     - apache service restart
+
+# - name: flush apache handlers
+#   tags:
+#     - apache
+#   meta: flush_handlers
+  

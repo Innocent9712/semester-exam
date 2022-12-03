@@ -1,0 +1,19 @@
+<VirtualHost *:80>
+    ServerAdmin {{ admin_email }}
+    ServerName {{ domain_name }}
+    {% if domain_alias is defined and domain_alias|length -%}
+    ServerAlias {{ domain_alias }}
+    {% endif -%}
+
+    DocumentRoot /var/www/html/{{ app_name }}/public
+
+    <Directory /var/www/html/{{ app_name }}>
+        Options Indexes  FollowSymLinks MultiViews
+        AllowOverride ALl
+        allow from all
+        Require all granted
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>

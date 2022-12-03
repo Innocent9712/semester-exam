@@ -1,0 +1,87 @@
+- name: Install snapd
+  become: true
+  tags:
+    - ssl
+  package:
+    name: snapd
+    update_cache: true
+
+- name: Install core
+  become: true
+  tags:
+    - ssl
+  command:
+    argv:
+      - sudo
+      - snap
+      - install
+      - core
+
+- name: Refresh core
+  become: true
+  tags:
+    - ssl
+  command:
+    argv:
+      - sudo
+      - snap
+      - refresh
+      - core
+
+- name: Install certbot
+  become: true
+  tags:
+    - ssl
+  command:
+    argv:
+      - sudo
+      - snap
+      - install
+      - --classic
+      - certbot
+
+- name: Create symlink for certbot
+  become: true
+  tags:
+    - ssl
+  command:
+    argv:
+      - sudo
+      - ln
+      - -s
+      - /snap/bin/certbot
+      - /usr/bin/certbot
+    creates: /usr/bin/certbot
+
+- name: Make sure app apache config is OK
+  become: true
+  tags:
+    - ssl
+  command:
+    argv:
+      - sudo
+      - apachectl
+      - configtest
+  notify: reload apache
+
+- name: create SSL certificate for app
+  become: true
+  tags:
+    - ssl
+    - certbot
+  command: sudo certbot --apache -d {{ domain_name }} -d {{ domain_alias }} --noninteractive --agree-tos --cert-name {{ domain_name }} -m {{ admin_email }}
+    # argv:
+    #   - sudo
+    #   - certbot
+    #   - --apache
+    #   - -d {{ domain_name }}
+    #   - -d {{ domain_alias }}
+    #   - --noninteractive
+    #   - --agree-tos
+    #   - --cert-name {{ domain_name }}
+    #   - -m {{ admin_email }}
+
+- name: flush ssl handlers
+  tags:
+    - ssl
+  meta: flush_handlers

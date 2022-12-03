@@ -1,0 +1,21 @@
+- name: upgrade dist
+  become: true
+  tags:
+    - debian
+    - upgrade
+    - setup
+  apt:
+    upgrade: dist
+  notify: update repo
+  when: ansible_distribution in ["Ubuntu", "Debian"]
+
+- name: Make sure git is installed
+  become: true
+  tags:
+    - setup
+    - git
+  apt:
+    name: git
+    state: present
+    update_cache: true
+  when: ansible_distribution in ["Ubuntu", "Debian"]

@@ -1,0 +1,34 @@
+---
+
+- hosts: app_servers
+  # become: true
+  vars_files:
+  - vars/main.yml
+  roles:
+    - base
+    - apache
+    - php
+    - mysql
+    - role: geerlingguy.mysql
+      become: true
+      tags:
+        - mysql
+        - debian
+        - mysql_role
+    - composer
+    - application
+    - postgres
+    - ssl
+  handlers:
+    - name: update repo
+      become: true
+      apt:
+        update_cache: true
+    - name: reload apache
+      become: true
+      service:
+        name: "{{ apache_package }}"
+        state: reloaded
+
+
+#   when: (ansible_distribution == "Debian" ) or (ansible_distribution == "Ubuntu")

@@ -1,0 +1,36 @@
+- name: download composer installer
+  become: true
+  tags:
+    - php
+    - composer
+  get_url:
+    url: https://getcomposer.org/installer
+    dest: /tmp/composer.php
+
+- name: install composer
+  become: true
+  tags:
+    - php
+    - composer
+  command:
+    chdir: /tmp
+    cmd: php composer.php
+    creates: /usr/local/bin/composer
+  notify:
+    - copy composer from /tmp to bin location
+    - delete temp composer file
+
+- name: flush composer handlers
+  tags:
+    - php
+    - composer
+  meta: flush_handlers
+
+- name: make sure composer is executable
+  become: true
+  tags:
+    - php
+    - composer
+  file:
+    path: /usr/local/bin/composer
+    mode: o+x

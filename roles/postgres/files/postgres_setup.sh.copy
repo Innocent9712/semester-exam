@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+sudo apt update -y;
+sudo apt install postgresql postgresql-contrib -y;
+
+# Create database
+sudo -i -u postgres psql -lqt | cut -d \| -f 1 | grep -qw test
+cmd_res=$?
+if [[ $cmd_res -ne 0 ]]; then
+ sudo su - postgres -c "createdb test";
+fi
+
+#edit postgres config file to allow user login with password
+sudo sed -i 's/local   all             all                                     peer/local   all             all                                     md5/' /etc/postgresql/*/main/pg_hba.conf
+sudo systemctl restart postgresql
+
+#create user
+echo "\du" | sudo -i -u postgres psql | cut -d \| -f 1 | grep -qw iaminnocent
+cmd_res=$?
+if [[ $cmd_res -ne 0 ]]; then
+ echo "CREATE USER iaminnocent WITH PASSWORD 'iaminnocent';" | sudo -i -u postgres psql;
+fi
+
+#grant user privilege to new database
+echo "GRANT ALL PRIVILEGES on DATABASE test to iaminnocent" | sudo -i -u postgres psql;
+
+#confirm that database and user exists and user has access to database
+echo "\dl" | PGPASSWORD=iaminnocent psql -U iaminnocent test

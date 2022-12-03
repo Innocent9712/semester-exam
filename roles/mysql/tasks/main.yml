@@ -1,0 +1,30 @@
+- name: download mysql source
+  become: true
+  tags:
+    - mysql
+    - debian
+    - mysql_setup
+  get_url:
+    url: https://dev.mysql.com/get/mysql-apt-config_0.8.22-1_all.deb
+    dest: /tmp/
+
+- name: Install package
+  become: true
+  tags:
+    - mysql
+    - debian
+    - mysql_setup
+  apt:
+    deb: /tmp/mysql-apt-config_0.8.22-1_all.deb
+    state: present
+    update_cache: yes
+  notify:
+    - update repo
+  when: ansible_distribution == "Debian"
+
+
+- name: Check variable referencing
+  tags:
+    - debug
+  debug:
+   msg: "App name: {{ app_name }}, db name: {{ db_name }}, username: {{ db_username }}, password: {{ db_user_pass }}, db port: {{ db_port }}"
